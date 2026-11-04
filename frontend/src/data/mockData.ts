@@ -1,46 +1,292 @@
-export interface ProjectNeed {
-  id: string;
-  title: string;
-  roleType: 'cofounder' | 'contributor' | 'task';
-  requiredSkills: string[];
-  hoursPerWeek: number;
-}
+// Clearly fictional seed data for the demo. Dates are relative to "today"
+// so activity labels stay sensible whenever you run the app.
+import type { ContributorProfile, Person, Project } from '../types';
 
-export interface Project {
-  id: string;
-  title: string;
-  location: string;
-  sector: string;
-  stage: string;
-  pitch: string;
-  statusLabel: string;
-  needs: ProjectNeed[];
-}
+const daysAgo = (n: number) => new Date(Date.now() - n * 86_400_000).toISOString();
 
-export const SEEDED_PROJECTS: Project[] = [
+export const people: Record<string, Person> = {
+  priya: { id: 'priya', name: 'Priya Natarajan', headline: 'MEng Civil Engineering, Newcastle', location: 'Newcastle' },
+  tom: { id: 'tom', name: 'Tom Ridley', headline: 'Ex-quayside café owner', location: 'Newcastle' },
+  aisha: { id: 'aisha', name: 'Aisha Bello', headline: 'Business & Management student, Durham', location: 'Durham' },
+  joe: { id: 'joe', name: 'Joe Hartley', headline: 'Full-stack developer', location: 'Durham' },
+  megan: { id: 'megan', name: 'Megan Charlton', headline: 'Bar supervisor & self-taught designer', location: 'Sunderland' },
+  sam: { id: 'sam', name: 'Sam Okafor', headline: 'Product designer', location: 'Teesside' },
+  lewis: { id: 'lewis', name: 'Lewis Armstrong', headline: 'Bike mechanic', location: 'Gateshead' },
+  hana: { id: 'hana', name: 'Hana Kowalski', headline: 'PGCE student, Sunderland', location: 'Sunderland' },
+};
+
+export const projects: Project[] = [
   {
-    id: "tyne-flow",
-    title: "TyneFlow AI",
-    location: "Newcastle Helix",
-    sector: "CleanTech & IoT",
-    stage: "Prototype",
-    statusLabel: "Recently Active",
-    pitch: "Building low-cost hardware and micro-services to monitor river quality and urban run-off in Newcastle and Gateshead.",
+    slug: 'quaywatch',
+    title: 'QuayWatch',
+    tagline: 'Early flood alerts for riverside businesses on the Tyne.',
+    problem: 'Small businesses along the quayside get little notice before high tides and surface flooding, and lose stock every winter.',
+    solution: 'Combine public river-level data with simple sensors and send targeted SMS/WhatsApp alerts with a recommended action.',
+    sector: 'Climate',
+    location: 'Newcastle',
+    stage: 'MVP',
+    status: 'Active',
+    accent: '#1f6f8b',
+    createdAt: daysAgo(120),
+    followers: 48,
+    team: [
+      { person: people.priya, role: 'Founder · hardware & data' },
+      { person: people.tom, role: 'Cofounder · business relationships' },
+    ],
     needs: [
-      { id: "n1", title: "FastAPI Developer", roleType: "contributor", requiredSkills: ["Python", "FastAPI"], hoursPerWeek: 6 },
-      { id: "n2", title: "Hardware Specialist", roleType: "cofounder", requiredSkills: ["C++", "ESP32", "IoT"], hoursPerWeek: 10 }
-    ]
+      {
+        id: 'qw-frontend',
+        title: 'React developer for business dashboard',
+        description: 'Build the dashboard where businesses see live levels, alert history and set thresholds.',
+        requiredSkills: ['React', 'TypeScript'],
+        desirableSkills: ['Data visualisation', 'Figma'],
+        workType: 'Ongoing contributor',
+        hoursPerWeek: 5,
+        workMode: 'Hybrid',
+        compensation: 'Voluntary',
+        status: 'Open',
+      },
+      {
+        id: 'qw-api',
+        title: 'Python API for river-level ingestion',
+        description: 'Pull public gauge data every 15 minutes and expose it via a small API.',
+        requiredSkills: ['Python', 'FastAPI'],
+        desirableSkills: ['AWS', 'PostgreSQL'],
+        workType: 'Short task',
+        hoursPerWeek: 4,
+        workMode: 'Remote',
+        compensation: 'Paid',
+        status: 'Open',
+      },
+    ],
+    posts: [
+      { id: 'qw1', type: 'Milestone', authorId: 'priya', date: daysAgo(3), substantive: true,
+        body: 'Three quayside cafés are now receiving test alerts. First real alert fired on Saturday night, 40 minutes before the water reached the path.' },
+      { id: 'qw2', type: 'Opportunity', authorId: 'priya', date: daysAgo(6), substantive: false,
+        body: 'We are looking for a React developer to own the business dashboard. 5 hours a week, hybrid.' },
+      { id: 'qw3', type: 'Roadblock', authorId: 'tom', date: daysAgo(18), substantive: true,
+        body: 'Sensor batteries are draining in ~9 days in the cold. Trying a lower polling rate and a bigger cell.' },
+      { id: 'qw4', type: 'Progress update', authorId: 'priya', date: daysAgo(40), substantive: true,
+        body: 'Prototype sensor housing printed and mounted on a test railing. Readings now match the official gauge within 3cm.' },
+    ],
+    milestones: [
+      { id: 'qwm1', title: 'First live alert sent to a pilot business', date: daysAgo(3), verified: false },
+      { id: 'qwm2', title: 'Sensor accuracy within 3cm of official gauge', date: daysAgo(40), evidenceUrl: 'https://example.com/quaywatch-test-log', verified: false },
+    ],
   },
   {
-    id: "durham-health",
-    title: "Vanguard Patient Portal",
-    location: "Durham",
-    sector: "HealthTech",
-    stage: "Active Beta",
-    statusLabel: "Recently Active",
-    pitch: "Connecting NHS regional research datasets with university researchers while maintaining strict consent controls.",
+    slug: 'second-helping',
+    title: 'Second Helping',
+    tagline: 'Surplus college food, collected by students before it is binned.',
+    problem: 'College kitchens throw away edible food every evening while some students skip meals to save money.',
+    solution: 'A simple claim-and-collect app: kitchens post surplus at close, students reserve a portion and collect within 30 minutes.',
+    sector: 'Sustainability',
+    location: 'Durham',
+    stage: 'Prototype',
+    status: 'Active',
+    accent: '#3f7d4e',
+    createdAt: daysAgo(60),
+    followers: 31,
+    team: [
+      { person: people.aisha, role: 'Founder · operations' },
+      { person: people.joe, role: 'Developer' },
+    ],
     needs: [
-      { id: "n3", title: "Frontend Engineer", roleType: "contributor", requiredSkills: ["React", "TypeScript", "Tailwind"], hoursPerWeek: 8 }
-    ]
-  }
+      {
+        id: 'sh-design',
+        title: 'UX designer for the collection flow',
+        description: 'Turn our clunky prototype into a three-tap reserve-and-collect flow that works on any phone.',
+        requiredSkills: ['Figma', 'UX research'],
+        desirableSkills: ['Accessibility'],
+        workType: 'Short task',
+        hoursPerWeek: 3,
+        workMode: 'Remote',
+        compensation: 'Voluntary',
+        status: 'Open',
+      },
+      {
+        id: 'sh-backend',
+        title: 'Backend developer (Supabase / Postgres)',
+        description: 'Model reservations and expiry, and add row level security so kitchens only see their own listings.',
+        requiredSkills: ['PostgreSQL', 'TypeScript'],
+        desirableSkills: ['Supabase'],
+        workType: 'Ongoing contributor',
+        hoursPerWeek: 6,
+        workMode: 'Hybrid',
+        compensation: 'Equity discussion',
+        status: 'Open',
+      },
+    ],
+    posts: [
+      { id: 'sh1', type: 'Progress update', authorId: 'joe', date: daysAgo(9), substantive: true,
+        body: 'Clickable prototype tested with 12 students in the library café. Biggest confusion: what "collection window" means.' },
+      { id: 'sh2', type: 'Announcement', authorId: 'aisha', date: daysAgo(25), substantive: false,
+        body: 'We will be at the Durham enterprise society social on Thursday. Come say hello.' },
+      { id: 'sh3', type: 'Milestone', authorId: 'aisha', date: daysAgo(30), substantive: true,
+        body: 'One college kitchen has agreed to a four-week pilot starting next term.' },
+    ],
+    milestones: [
+      { id: 'shm1', title: 'Pilot agreed with one college kitchen', date: daysAgo(30), verified: false },
+    ],
+  },
+  {
+    slug: 'shiftswap',
+    title: 'ShiftSwap',
+    tagline: 'Swap hospitality shifts without the 40-message group chat.',
+    problem: 'Bar and restaurant staff organise cover through chaotic group chats; managers lose track of who is actually working.',
+    solution: 'Post a shift, colleagues who are eligible get notified, a manager approves in one tap.',
+    sector: 'Work & HR',
+    location: 'Sunderland',
+    stage: 'Early users',
+    status: 'Active',
+    accent: '#b5523b',
+    createdAt: daysAgo(200),
+    followers: 77,
+    team: [{ person: people.megan, role: 'Founder · product & design' }],
+    needs: [
+      {
+        id: 'ss-cofounder',
+        title: 'Technical cofounder',
+        description: 'Take ownership of the codebase as we move from 2 venues to 10.',
+        requiredSkills: ['React', 'Node.js', 'PostgreSQL'],
+        desirableSkills: ['React Native'],
+        workType: 'Cofounder',
+        hoursPerWeek: 15,
+        workMode: 'In person',
+        compensation: 'Equity discussion',
+        status: 'Open',
+      },
+    ],
+    posts: [
+      { id: 'ss1', type: 'Progress update', authorId: 'megan', date: daysAgo(12), substantive: true,
+        body: 'Two venues now use ShiftSwap for all cover requests. 63 swaps approved in October.' },
+      { id: 'ss2', type: 'Opportunity', authorId: 'megan', date: daysAgo(14), substantive: false,
+        body: 'Looking for a technical cofounder based in or near Sunderland.' },
+    ],
+    milestones: [
+      { id: 'ssm1', title: 'Second venue onboarded', date: daysAgo(35), verified: true, evidenceUrl: 'https://example.com/shiftswap-venue-letter' },
+      { id: 'ssm2', title: 'First paying venue', date: daysAgo(90), verified: false },
+    ],
+  },
+  {
+    slug: 'makers-map',
+    title: 'Teesside Makers Map',
+    tagline: 'Find the laser cutter, kiln or lathe you need, near you.',
+    problem: 'Makers in Teesside do not know which spaces have which tools, or when they can use them.',
+    solution: 'A community-maintained map of maker spaces, tools and open sessions.',
+    sector: 'Community',
+    location: 'Teesside',
+    stage: 'Idea',
+    status: 'Active',
+    accent: '#7a5aa6',
+    createdAt: daysAgo(5),
+    followers: 6,
+    team: [{ person: people.sam, role: 'Founder' }],
+    needs: [
+      {
+        id: 'mm-dev',
+        title: 'Developer to build a first map prototype',
+        description: 'A simple map with filterable pins. Happy to use any stack.',
+        requiredSkills: ['React'],
+        desirableSkills: ['Leaflet', 'TypeScript'],
+        workType: 'Short task',
+        hoursPerWeek: 3,
+        workMode: 'Remote',
+        compensation: 'Voluntary',
+        status: 'Open',
+      },
+    ],
+    posts: [
+      { id: 'mm1', type: 'Announcement', authorId: 'sam', date: daysAgo(5), substantive: true,
+        body: 'Just posted this idea. I have a spreadsheet of 14 spaces so far. Would love feedback.' },
+    ],
+    milestones: [],
+  },
+  {
+    slug: 'canny-tutor',
+    title: 'Canny Tutor',
+    tagline: 'Peer tutoring sessions for GCSE maths, matched by topic.',
+    problem: 'Students struggling with one topic wait weeks for help, while older students would happily tutor for references.',
+    solution: 'Match GCSE students to sixth-formers by topic and availability, with session notes teachers can see.',
+    sector: 'Education',
+    location: 'Sunderland',
+    stage: 'Idea',
+    status: 'Active',
+    accent: '#c48a1d',
+    createdAt: daysAgo(10),
+    followers: 12,
+    team: [{ person: people.hana, role: 'Founder' }],
+    needs: [
+      {
+        id: 'ct-mentor',
+        title: 'Mentor with edtech or safeguarding experience',
+        description: 'Advice on safeguarding requirements before we talk to schools.',
+        requiredSkills: ['Safeguarding'],
+        desirableSkills: ['Education policy'],
+        workType: 'Mentor',
+        hoursPerWeek: 1,
+        workMode: 'Remote',
+        compensation: 'Voluntary',
+        status: 'Open',
+      },
+      {
+        id: 'ct-proto',
+        title: 'Developer for a matching prototype',
+        description: 'Simple web app to match students and tutors by topic and free periods.',
+        requiredSkills: ['TypeScript', 'React'],
+        desirableSkills: ['PostgreSQL'],
+        workType: 'Short task',
+        hoursPerWeek: 4,
+        workMode: 'Remote',
+        compensation: 'Voluntary',
+        status: 'Open',
+      },
+    ],
+    posts: [
+      { id: 'ct1', type: 'Progress update', authorId: 'hana', date: daysAgo(4), substantive: true,
+        body: 'Ran a paper version with 6 students during placement. Topic matching worked; scheduling did not.' },
+    ],
+    milestones: [],
+  },
+  {
+    slug: 'fettle',
+    title: 'Fettle',
+    tagline: 'Book a local bike mechanic in two minutes.',
+    problem: 'Independent mechanics lose bookings to chains because they only take phone calls.',
+    solution: 'A lightweight booking page each mechanic can share, with reminders.',
+    sector: 'Local services',
+    location: 'Gateshead',
+    stage: 'Prototype',
+    status: 'Paused',
+    accent: '#5b6770',
+    createdAt: daysAgo(300),
+    followers: 19,
+    team: [{ person: people.lewis, role: 'Founder' }],
+    needs: [],
+    posts: [
+      { id: 'fe1', type: 'Announcement', authorId: 'lewis', date: daysAgo(95), substantive: true,
+        body: 'Pausing Fettle over the busy season. Booking page still works for my own shop.' },
+    ],
+    milestones: [{ id: 'fem1', title: 'Booking page live for one shop', date: daysAgo(150), verified: false }],
+  },
 ];
+
+// The demo contributor used on the Matches page. In the real app this comes from
+// GitHub analysis + declared skills, after the user has reviewed it.
+export const demoContributor: ContributorProfile = {
+  name: 'Alex Demo',
+  location: 'Durham',
+  hoursPerWeek: 6,
+  interests: ['Climate', 'Sustainability', 'Education'],
+  workTypes: ['Ongoing contributor', 'Short task'],
+  workModes: ['Remote', 'Hybrid'],
+  skills: [
+    { name: 'React', source: 'GitHub', confidence: 'Demonstrated', evidence: 'uni-timetable: 40+ commits to a React front end' },
+    { name: 'TypeScript', source: 'GitHub', confidence: 'Demonstrated', evidence: 'uni-timetable and budget-buddy are written in TypeScript' },
+    { name: 'Python', source: 'GitHub', confidence: 'Demonstrated', evidence: 'weather-bot: scheduled Python scraper' },
+    { name: 'FastAPI', source: 'GitHub', confidence: 'Demonstrated', evidence: 'budget-buddy-api: implemented FastAPI service with 6 routes' },
+    { name: 'Docker', source: 'GitHub', confidence: 'Mentioned only', evidence: 'Dockerfile present in a forked repo; no commits by you' },
+    { name: 'PostgreSQL', source: 'Declared', confidence: 'Self-declared', evidence: 'Added by you' },
+    { name: 'Figma', source: 'Experience', confidence: 'Self-declared', evidence: 'Summer internship: designed onboarding screens' },
+  ],
+};
