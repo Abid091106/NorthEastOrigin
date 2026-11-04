@@ -1,0 +1,153 @@
+/* P3 progress feature, styled with the Network Design Kit (docs/network-design-kit/).
+   Scoped to `.act` so the rest of the app is unchanged until P1 adopts the kit globally.
+   Token values are copied from docs/network-design-kit/tokens.css; fonts and their SIL OFL
+   licenses live in ./fonts.
+
+   Category: yellow marks Progress. Colour always sits next to a text label. */
+
+@font-face { font-family: 'DM Sans'; src: url('./fonts/dm-sans-latin-400-normal.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'DM Sans'; src: url('./fonts/dm-sans-latin-500-normal.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: 'DM Sans'; src: url('./fonts/dm-sans-latin-600-normal.woff2') format('woff2'); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Space Grotesk'; src: url('./fonts/space-grotesk-latin-400-normal.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Space Grotesk'; src: url('./fonts/space-grotesk-latin-500-normal.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+
+.act {
+  --act-canvas: #141b1d;
+  --act-ink: #172331;
+  --act-paper: #eeecdf;
+  --act-paper-raised: #f4f1e7;
+  --act-band: #dcdacc;
+  --act-muted: #526171;
+  --act-line: #1723313d;
+  --act-perforation: #17233166;
+  --act-progress: #ffd300;
+  --act-focus: #003888;
+  --act-focus-on-dark: #e66c57;
+  --act-shadow: 8px 12px 0 #0002;
+  --act-body: 'DM Sans', system-ui, sans-serif;
+  --act-heading: 'Space Grotesk', system-ui, sans-serif;
+  --act-feedback: 160ms;
+  --act-ease: cubic-bezier(.2, .7, .2, 1);
+  font-family: var(--act-body);
+  color: var(--act-ink);
+  gap: 32px;
+}
+
+/* Ticket: 5px category stripe, muted identity band, content, perforated action area */
+.act-ticket {
+  background: var(--act-paper);
+  color: var(--act-ink);
+  border-top: 5px solid var(--act-progress);
+  box-shadow: var(--act-shadow);
+  font-size: 15px;
+  line-height: 1.65;
+}
+.act-band {
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  min-height: 44px; padding: 8px 28px;
+  background: var(--act-band); border-bottom: 1px solid var(--act-line);
+  font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+}
+.act-band-id { display: inline-flex; align-items: center; gap: 8px; }
+.act-badge {
+  display: inline-grid; place-items: center; flex: none; width: 20px; height: 20px; border-radius: 2px;
+  background: var(--act-progress); color: var(--act-ink);
+  font: 600 11px/1 var(--act-body); letter-spacing: 0;
+}
+.act-content { padding: 24px 28px 28px; }
+.act-eyebrow { margin: 0 0 8px; font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--act-muted); }
+.act h2 { margin: 0 0 20px; font: 400 28px/1.15 var(--act-heading); letter-spacing: -0.04em; color: var(--act-ink); }
+.act h3 { margin: 0 0 6px; font: 400 20px/1.2 var(--act-heading); letter-spacing: -0.03em; color: var(--act-ink); }
+.act p { margin: 0; }
+.act a { color: var(--act-ink); text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.act a:hover { text-decoration-thickness: 2px; }
+.act :focus-visible { outline: 3px solid var(--act-focus); outline-offset: 2px; }
+
+/* Fact rows: short labels and aligned values separated by fine rules */
+.act-facts { margin: 0 0 24px; font-size: 14px; }
+.act-facts > div { display: flex; justify-content: space-between; gap: 16px; padding: 9px 0; border-top: 1px solid var(--act-line); }
+.act-facts > div:last-child { border-bottom: 1px solid var(--act-line); }
+.act-facts dt { color: var(--act-muted); }
+.act-facts dd { margin: 0; font-weight: 500; text-align: right; }
+
+/* Timeline: a thin ink route with station rings. Filled ring = counts as progress. */
+.act-timeline { position: relative; list-style: none; margin: 0; padding: 0; }
+.act-timeline::before { content: ''; position: absolute; left: 7px; top: 12px; bottom: 12px; width: 4px; background: var(--act-ink); }
+.act-entry { position: relative; padding: 0 0 24px 36px; }
+.act-entry:last-child { padding-bottom: 0; }
+.act-entry::before, .act-node {
+  content: ''; position: absolute; left: 0; top: 4px; box-sizing: border-box;
+  width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--act-ink); background: var(--act-paper);
+}
+.act-counts::before, .act-node-filled { background: var(--act-ink); box-shadow: inset 0 0 0 3px var(--act-paper); }
+.act-entry-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-bottom: 8px; font-size: 13px; }
+.act-entry-meta time { color: var(--act-muted); }
+
+/* Type tags: text first, shape second */
+.act-type { display: inline-flex; align-items: center; padding: 2px 8px; border: 1px solid var(--act-ink); border-radius: 2px; font-size: 12px; font-weight: 500; line-height: 1.5; }
+.act-type-milestone { background: var(--act-ink); color: var(--act-paper); }
+.act-type-roadblock { border-width: 2px; }
+.act-type-roadblock::before { content: '!'; margin-right: 6px; font-weight: 600; }
+.act-type-opportunity, .act-type-announcement, .act-type-reported { border-style: dashed; border-color: var(--act-muted); font-weight: 400; }
+.act-evidence { display: inline-flex; margin-top: 8px; font-size: 14px; }
+
+.act-key { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 24px !important; padding-top: 12px; border-top: 1px solid var(--act-line); font-size: 12px; color: var(--act-muted); }
+.act-key-item { display: inline-flex; align-items: center; gap: 8px; }
+.act-key .act-node { position: static; width: 14px; height: 14px; border-width: 2px; }
+.act-key .act-node-filled { box-shadow: inset 0 0 0 2px var(--act-paper); }
+.act-note { margin-top: 20px !important; padding-top: 12px; border-top: 1px solid var(--act-line); font-size: 13px; color: var(--act-muted); }
+
+/* Empty, loading and error states */
+.act-empty { padding: 16px; border: 1px dashed var(--act-muted); color: var(--act-muted); }
+.act-content > p[role='status'] { padding: 16px; color: var(--act-muted); }
+.act .neo-feedback { margin: 0 0 16px; padding: 12px 16px; border-left: 5px solid var(--act-focus-on-dark); background: var(--act-paper-raised); color: var(--act-ink); }
+
+/* Pager from the shared UI, restyled inside this feature */
+.act .neo-pager { margin-top: 20px; font-size: 14px; }
+.act .neo-pager .btn { min-height: 40px; border-radius: 0; border: 1px solid var(--act-muted); background: transparent; color: var(--act-ink); font: 500 14px var(--act-body); }
+.act .neo-pager .btn:hover:not(:disabled) { border-color: var(--act-ink); }
+
+/* Owner forms */
+.act-form { margin: 0; }
+.act .neo-form { gap: 16px; }
+.act .field { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 500; color: var(--act-ink); }
+.act .field input, .act .field select, .act .field textarea {
+  min-height: 44px; padding: 10px 12px; border: 1px solid var(--act-muted); border-radius: 0;
+  background: var(--act-paper-raised); color: var(--act-ink); font: 400 16px/1.4 var(--act-body);
+  transition: border-color var(--act-feedback) var(--act-ease), box-shadow var(--act-feedback) var(--act-ease);
+}
+.act .field textarea { min-height: 120px; resize: vertical; }
+.act .field input:hover, .act .field select:hover, .act .field textarea:hover { border-color: var(--act-ink); }
+.act .field input:focus-visible, .act .field select:focus-visible, .act .field textarea:focus-visible { outline: none; border-color: var(--act-focus); box-shadow: inset 0 0 0 2px var(--act-focus); }
+.act .field ::placeholder { color: var(--act-muted); opacity: 1; }
+.act-help { margin-top: -8px !important; font-size: 13px; color: var(--act-muted); }
+
+/* Perforated action area with an ink primary button */
+.act-action {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px;
+  padding: 14px 28px; border-top: 1px dashed var(--act-perforation); background: var(--act-band);
+}
+.act-button {
+  display: inline-flex; align-items: center; justify-content: space-between; gap: 24px;
+  min-height: 48px; padding: 12px 18px; border: 0; border-radius: 0;
+  background: var(--act-ink); color: var(--act-paper); font: 500 15px/1.2 var(--act-body); cursor: pointer;
+  transition: background-color var(--act-feedback) var(--act-ease);
+}
+.act-button::after { content: '↗'; }
+.act-button:hover:not(:disabled) { background: var(--act-canvas); }
+.act-button:disabled { opacity: 0.6; cursor: not-allowed; }
+.act-notice { font-size: 14px; font-weight: 500; }
+.act-notice::before { content: '✓ '; }
+
+.act-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+@media (max-width: 759px) {
+  .act { gap: 24px; }
+  .act-band, .act-action { padding-inline: 18px; }
+  .act-content { padding: 20px 18px 24px; }
+  .act h2 { font-size: 26px; }
+  .act-button { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .act * { transition: none !important; }
+}
