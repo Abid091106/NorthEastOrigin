@@ -14,12 +14,12 @@ test-results/
 playwright-report/
 *.local
 
-# Track shared public app configuration; keep other environment files ignored.
+# Keep all environment files out of Git.
 .env
 .env.*
-!.env.example
-!backend/.env
-!frontend/.env
+*.env
+
+
 
 # Editor directories and files
 .vscode/*
