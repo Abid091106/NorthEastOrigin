@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { message } from '../../lib/api'
 import { Feedback, Field, SetupNotice } from '../../components/ui/Feedback'
 import { useAuth } from './AuthProvider'
+import { authErrorMessage } from './authErrorMessage'
 
 export function LoginPage() { return <AuthPage signup={false} /> }
 export function SignupPage() { return <AuthPage signup /> }
@@ -18,6 +19,7 @@ function AuthPage({ signup }: { signup: boolean }) {
   const [subscribed, setSubscribed] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const submitting = useRef(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [confirmation, setConfirmation] = useState(false)
@@ -25,7 +27,10 @@ function AuthPage({ signup }: { signup: boolean }) {
   if (loading) return <Feedback loading />
   if (session) return <Navigate to={destination} replace />
   async function submit(event: FormEvent) {
-    event.preventDefault(); setBusy(true); setError('')
+    event.preventDefault()
+    if (submitting.current) return
+    submitting.current = true
+    setBusy(true); setError('')
     try {
       if (signup) {
         if (accountType === 'investor' && !subscribed) throw new Error('Confirm the fictional investor subscription to continue.')
@@ -36,7 +41,7 @@ function AuthPage({ signup }: { signup: boolean }) {
         const { error } = await supabase!.auth.signInWithPassword({ email: email.trim(), password })
         if (error) throw error
       }
-    } catch (error) { setError(message(error)) } finally { setBusy(false) }
+    } catch (error) { setError(authErrorMessage(error, message(error))) } finally { submitting.current = false; setBusy(false) }
   }
   return <section className="neo-auth card pad">
     <h1>{signup ? 'Join North East Origins' : 'Welcome back'}</h1>
