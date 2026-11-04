@@ -9,7 +9,11 @@ export type PostType = 'progress' | 'milestone' | 'roadblock' | 'opportunity' | 
 export type NeedStatus = 'open' | 'reviewing' | 'filled' | 'closed'
 export type Compensation = 'paid' | 'voluntary' | 'equity_discussion' | 'unspecified'
 export type ApplicationStatus = 'submitted' | 'reviewing' | 'accepted' | 'rejected' | 'withdrawn'
+export type AccountType = 'member' | 'investor'
+export type InvestorSubscription = 'fictional_599_monthly' | null
 export interface Profile {
+  accountType: AccountType
+  investorSubscription: InvestorSubscription
   id: string
   displayName: string
   bio: string
@@ -20,7 +24,7 @@ export interface Profile {
   participationTypes: ParticipationType[]
   workModes: WorkMode[]
 }
-export type ProfilePatch = Partial<Omit<Profile, 'id'>>
+export type ProfilePatch = Partial<Omit<Profile, 'id' | 'accountType' | 'investorSubscription'>>
 export interface Project {
   id: string
   ownerId: string

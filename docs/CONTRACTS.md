@@ -110,3 +110,7 @@ Discovery computes this date from substantive post `createdAt` values and standa
 ## Existing fixtures
 
 `frontend/src/data/mockData.ts` is an existing P5-owned development fixture. Its string slugs, roleType and display-stage values are legacy demo data, not the API contract. P5 maps them to the live schema/UUIDs in the seed process and labels all examples fictional. Do not make the whole application depend on those old fixture interfaces or remove another person's work to change the contract.
+
+## Investor accounts (P1)
+
+Signup offers free member and investor accounts. Investors explicitly choose a fictional £5.99/month subscription; there are no charges or recurring billing. Supabase Auth persists account_type and investor_subscription metadata across email confirmation and login. GET/PATCH /me returns read-only accountType and investorSubscription; PATCH rejects these fields. Existing accounts default to member. Classification requires both account_type=investor and investor_subscription=fictional_599_monthly. These self-declared demo attributes never grant permissions or establish verified payment. No schema migration is required. P1 signup and profile consume the new fields; other lanes retain existing permissions.

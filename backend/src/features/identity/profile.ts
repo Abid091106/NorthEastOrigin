@@ -30,8 +30,11 @@ export function parseProfilePatch(input: unknown): ProfilePatch {
   return result as ProfilePatch
 }
 
-export function toProfile(row: Record<string, unknown>): Profile {
+export function toProfile(row: Record<string, unknown>, metadata: Record<string, unknown> = {}): Profile {
+  const investor = metadata.account_type === 'investor' && metadata.investor_subscription === 'fictional_599_monthly'
   return {
+    accountType: investor ? 'investor' : 'member',
+    investorSubscription: investor ? 'fictional_599_monthly' : null,
     id: row.id as string, displayName: row.display_name as string, bio: row.bio as string,
     location: row.location as string, declaredSkills: row.declared_skills as string[], interests: row.interests as string[],
     hoursPerWeek: row.hours_per_week as number | null, participationTypes: row.participation_types as Profile['participationTypes'],
