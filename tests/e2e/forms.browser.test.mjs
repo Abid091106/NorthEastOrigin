@@ -130,11 +130,13 @@ test('local mobile browser forms and new-session persistence', {
     await step('browser signup, email confirmation and sign-in', async () => {
       const { context, page } = await mobilePage()
       await page.goto(`${uiUrl}/signup`)
+      const member = page.getByRole('radio', { name: /^Member/ })
+      if (await member.count()) await member.check()
       await page.getByLabel('Email', { exact: true }).fill(env.E2E_SIGNUP_EMAIL)
       await page.getByLabel('Password', { exact: true }).fill(signupPassword)
       const responsePromise = page.waitForResponse(response =>
         new URL(response.url()).pathname === '/auth/v1/signup' && response.request().method() === 'POST')
-      await page.getByRole('button', { name: 'Create account', exact: true }).click()
+      await page.getByRole('button', { name: /^(Create account|Create free member account)$/ }).click()
       const response = await responsePromise
       assert.equal(response.status(), 200, 'local Auth accepts browser signup')
       const created = await response.json()
