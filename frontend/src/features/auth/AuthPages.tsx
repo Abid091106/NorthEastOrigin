@@ -11,11 +11,10 @@ export function SignupPage() { return <AuthPage signup /> }
 function AuthPage({ signup }: { signup: boolean }) {
   const { session, loading } = useAuth()
   const [params] = useSearchParams()
-  const investorSignup = signup && params.get('plan') === 'investor'
   const requested = params.get('next') ?? '/profile'
   const hasUnsafeCharacter = [...requested].some(character => character === '\\' || character.charCodeAt(0) < 32)
   const destination = /^\/(?!\/)/.test(requested) && !hasUnsafeCharacter && !/^\/(login|signup)(\?|$)/.test(requested) ? requested : '/profile'
-  const [accountType, setAccountType] = useState<'member' | 'investor'>(params.get('account') === 'investor' ? 'investor' : 'member')
+  const [accountType, setAccountType] = useState<'member' | 'investor'>(params.get('account') === 'investor' || params.get('plan') === 'investor' ? 'investor' : 'member')
   const [subscribed, setSubscribed] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -42,7 +41,6 @@ function AuthPage({ signup }: { signup: boolean }) {
   return <section className="neo-auth card pad">
     <h1>{signup ? 'Join North East Origins' : 'Welcome back'}</h1>
     <p className="muted">Find a project worth joining, or the people who can help build yours.</p>
-    {investorSignup && <p className="neo-investor-signup">Investor plan: <strong>£5.99 GBP per month.</strong> Billing is not available yet. This creates a standard account without taking payment or activating a paid subscription. <Link to="/pricing">View plan details</Link>.</p>}
     {confirmation ? <p role="status">Check your email to confirm your account, then sign in here.</p> : <form onSubmit={submit} className="neo-form">
       {signup && <fieldset disabled={busy}><legend>Choose your account</legend>
         <label className="neo-check"><input type="radio" name="accountType" value="member" checked={accountType === 'member'} onChange={() => { setAccountType('member'); setSubscribed(false) }} />Member — free. Build projects or join a team.</label>
