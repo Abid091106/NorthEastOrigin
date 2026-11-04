@@ -14,7 +14,7 @@ export function identityRouter(env: Env) {
     if (bootstrap.error) databaseError(bootstrap.error)
     const { data, error } = await db.from('profiles').select('*').eq('id', user.id).single()
     if (error || !data) databaseError(error)
-    res.set('Cache-Control', 'no-store').json({ data: toProfile(data) })
+    res.set('Cache-Control', 'no-store').json({ data: toProfile(data, user.user_metadata) })
   })
   router.patch('/me', async (req, res) => {
     const patch = parseProfilePatch(req.body)
@@ -23,7 +23,7 @@ export function identityRouter(env: Env) {
     if (bootstrap.error) databaseError(bootstrap.error)
     const { data, error } = await db.from('profiles').update(toProfileRow(patch)).eq('id', user.id).select('*').single()
     if (error || !data) databaseError(error)
-    res.set('Cache-Control', 'no-store').json({ data: toProfile(data) })
+    res.set('Cache-Control', 'no-store').json({ data: toProfile(data, user.user_metadata) })
   })
   return router
 }

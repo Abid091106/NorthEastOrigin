@@ -23,12 +23,15 @@ function ProfileForm({ profile, refreshProfile }: { profile: Profile; refreshPro
     event.preventDefault(); if (!form) return
     setBusy(true); setError(''); setSaved(false)
     try {
-      const { id: _id, ...patch } = form
+      const { id: _id, accountType: _accountType, investorSubscription: _subscription, ...patch } = form
       await save<Profile>('/me', { ...patch, declaredSkills: parseSkillList(skills), interests: interests.split(',').map(s => s.trim()).filter(Boolean) }, 'PATCH')
       await refreshProfile(); setSaved(true)
     } catch (error) { setError(message(error)) } finally { setBusy(false) }
   }
   return <section className="neo-auth card pad"><h1>Your profile</h1><p className="muted">Your profile is private. Founders receive only your name, declared skills and availability when you apply.</p>
+    <div className="card pad"><h2>{profile.accountType === 'investor' ? 'Investor account' : 'Member account'}</h2>
+      <p>{profile.accountType === 'investor' ? 'Fictional investor subscription · £5.99 a month. No charges or recurring billing.' : 'Free membership for building projects and joining teams.'}</p>
+    </div>
     <form className="neo-form" onSubmit={submit}>
       <Field label="Display name"><input required maxLength={120} value={form.displayName} onChange={e => setForm({ ...form, displayName: e.target.value })} /></Field>
       <Field label="About you"><textarea maxLength={5000} value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })} /></Field>
