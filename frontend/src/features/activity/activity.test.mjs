@@ -41,3 +41,45 @@ test('milestone dates keep the chosen calendar day', () => {
   assert.equal(milestoneTimestamp('2026-11-04'), '2026-11-04T12:00:00.000Z');
   assert.equal(todayInputValue(new Date(2026, 10, 4, 23, 30)), '2026-11-04');
 });
+
+// S-02 activity labels
+import { activityLabel, daysSince } from './labels.ts';
+
+const NOW = new Date('2026-11-04T12:00:00Z');
+const label = (lastSubstantiveUpdateAt, status = 'active') => activityLabel({ status, lastSubstantiveUpdateAt }, NOW).label;
+const daysAgo = n => new Date(NOW.getTime() - n * 86_400_000).toISOString();
+
+test('recently active up to and including 14 days', () => {
+  assert.equal(label(daysAgo(0)), 'Recently active');
+  assert.equal(label(daysAgo(14)), 'Recently active');
+});
+
+test('quiet from 15 to 30 days', () => {
+  assert.equal(label(daysAgo(15)), 'Quiet');
+  assert.equal(label(daysAgo(30)), 'Quiet');
+});
+
+test('dormant after 30 days', () => {
+  assert.equal(label(daysAgo(31)), 'Dormant');
+  assert.equal(label(daysAgo(400)), 'Dormant');
+});
+
+test('no history is a new idea, never dormant', () => {
+  assert.equal(label(null), 'New idea');
+  assert.equal(label('not a date'), 'New idea');
+});
+
+test('paused and completed replace the recency label', () => {
+  assert.equal(label(daysAgo(2), 'paused'), 'Paused');
+  assert.equal(label(null, 'completed'), 'Completed');
+  assert.equal(label(daysAgo(90), 'completed'), 'Completed');
+});
+
+test('a missing status falls back to recency', () => {
+  assert.equal(activityLabel({ lastSubstantiveUpdateAt: daysAgo(3) }, NOW).kind, 'recent');
+});
+
+test('a date slightly in the future counts as today, not negative days', () => {
+  assert.equal(daysSince('2026-11-05T00:00:00Z', NOW), 0);
+  assert.equal(label('2026-11-05T00:00:00Z'), 'Recently active');
+});

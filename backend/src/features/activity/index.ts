@@ -1,13 +1,14 @@
 import { Router } from 'express'
-import { z } from 'zod'
+import type { z } from 'zod'
 import type { Env } from '../../env.js'
 import { optionalAuth, requireAuth } from '../../middleware/auth.js'
 import { visibleProject } from '../../lib/projects.js'
-import { camel, longText, pagination, parse, shortText, snake } from '../../lib/validation.js'
+import { camel, pagination, parse, snake } from '../../lib/validation.js'
 import { databaseError } from '../../lib/supabase.js'
+import { milestoneInput, postInput } from './validation.js'
 
-const post = z.strictObject({ type: z.enum(['progress', 'milestone', 'roadblock', 'opportunity', 'announcement']), body: longText })
-const milestone = z.strictObject({ title: shortText, description: longText, achievedAt: z.iso.datetime({ offset: true }), evidenceUrl: z.url({ protocol: /^https?$/ }).max(2048).nullable().default(null) })
+const post = postInput
+const milestone = milestoneInput()
 export function activityRouter(env?: Env) {
   const router = Router()
   for (const [segment, table, order, schema] of [

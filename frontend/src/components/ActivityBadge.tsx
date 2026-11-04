@@ -4,6 +4,7 @@ const styles: Record<string, string> = {
   Dormant: 'badge badge-grey',
   Paused: 'badge badge-grey',
   Completed: 'badge badge-blue',
+  'New idea': 'badge badge-blue',
 };
 
 export default function ActivityBadge({ label }: { label: string }) {

@@ -1,5 +1,6 @@
 // P3 progress feature: dated updates, founder-reported milestones and the owner's
-// publishing tools. Public export: ProjectActivity({ projectId, canManage }).
+// publishing tools. Public exports: ProjectActivity({ projectId, canManage }) and
+// ActivityStatus({ status, lastSubstantiveUpdateAt }) for the S-02 label.
 // Styled with the Network Design Kit (docs/DESIGN.md), scoped to this feature.
 import { useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
@@ -9,6 +10,8 @@ import { message, save } from '../../lib/api'
 import { Feedback, Field, Pager } from '../../components/ui/Feedback'
 import { POST_TYPES, formatDate, isSubstantive, latestProgress, milestoneTimestamp, postLabel, todayInputValue } from './progress'
 import './activity.css'
+
+export { ActivityStatus } from './ActivityStatus'
 
 const PAGE_SIZE = 20
 
