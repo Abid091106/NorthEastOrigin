@@ -32,7 +32,7 @@ test('P0 database: owner → publication → application → private review', as
       grant usage on schema public, auth to anon, authenticated;
       grant execute on function auth.uid() to anon, authenticated;
     `)
-    for (const migration of ['202611040001_p0_foundation.sql', '202611040002_discovery.sql', '202611040003_seed_record_guards.sql']) {
+    for (const migration of ['202611040001_p0_foundation.sql', '202611040002_discovery.sql', '202611040003_seed_record_guards.sql', '202611050001_discovery_page.sql']) {
       await db.exec(await readFile(new URL(`../../../supabase/migrations/${migration}`, import.meta.url), 'utf8'))
     }
     for (const userId of [owner, applicant, unrelated]) {
@@ -88,6 +88,16 @@ test('P0 database: owner → publication → application → private review', as
         assert.equal(Number(results.rows[0].open_needs_count), 1)
         assert.ok(results.rows[0].last_substantive_update_at)
         assert.equal((await db.query("select * from public.discover_projects(null,'Durham','React')")).rows.length, 0)
+        const page = async (args: string) => (await db.query<{ result: { total: number; rows: { id: string; project_needs: unknown[] }[] } }>(`select public.discover_projects_page(${args}) as result`)).rows[0].result
+        const found = await page("filter_q => ' RIVER ', filter_location => 'newcastle', filter_skills => array['react','reactjs']")
+        assert.equal(found.total, 1)
+        assert.deepEqual(found.rows.map(row => row.id), [project])
+        assert.equal(found.rows[0].project_needs.length, 2)
+        assert.equal((await page("filter_location => 'Durham'")).total, 0)
+        const beyondEnd = await page('page_offset => 5')
+        assert.equal(beyondEnd.total, 1, 'the total survives paging past the end')
+        assert.deepEqual(beyondEnd.rows, [])
+        assert.deepEqual((await page('page_limit => 0')).rows, [])
       })
       await as('authenticated', unrelated, async () => {
         assert.equal((await db.query("update public.project_needs set status='closed' where id=$1 returning id", [need])).rows.length, 0)
