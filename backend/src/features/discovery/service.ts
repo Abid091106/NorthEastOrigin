@@ -1,22 +1,12 @@
-// Discovery query logic. The database query only narrows to published projects
-// (RLS also enforces this); matching, ordering and pagination run here so the
-// contract's case-insensitive semantics are applied identically everywhere.
-//
-// Scale note: this reads every published project per request. That is fine for the
-// timed build and demo data (tens to hundreds of rows). If discovery grows, ask P1
-// for a SQL view/function with the same semantics and keep `applyDiscovery` as the spec.
-import { canonicalSkill } from './skills.ts';
+// Discovery query logic. Filtering, ordering and pagination run in the database
+// function `discover_projects_page`, so Supabase's row cap cannot hide projects.
+// Summaries are built here so skill names stay canonical in one place.
+// `applyDiscovery` remains the executable spec for those semantics.
+import { canonicalSkill, SKILL_ALIASES } from './skills.ts';
 import type { DiscoveryFilters, DiscoveryProjectRow, Page, ProjectSummary } from './types.ts';
 
 /** Post types that count as substantive progress (announcements/opportunities do not). */
 export const SUBSTANTIVE_POST_TYPES = new Set(['progress', 'milestone', 'roadblock']);
-
-export const DISCOVERY_SELECT = [
-  'id, title, pitch, sector, location, stage, status, visibility, owner_display_name, created_at',
-  'project_needs(status, required_skills)',
-  'project_posts(type, created_at)',
-  'milestones(achieved_at)',
-].join(', ');
 
 const fold = (s: string) => s.trim().toLocaleLowerCase('en-GB');
 
@@ -101,22 +91,48 @@ export function applyDiscovery(rows: DiscoveryProjectRow[], filters: DiscoveryFi
   };
 }
 
+/** Every stored spelling that means this skill, lower-cased for the database match. */
+export function skillSpellings(skill: string): string[] {
+  const canonical = fold(canonicalSkill(skill));
+  const aliases = Object.entries(SKILL_ALIASES)
+    .filter(([, name]) => fold(name) === canonical)
+    .map(([alias]) => fold(alias));
+  return [...new Set([canonical, fold(skill), ...aliases])];
+}
+
 /**
  * Minimal structural type for the public (anon/publishable-key) Supabase client,
  * so this feature does not depend on how P1 constructs it.
  */
 export interface PublicDb {
-  from(table: 'projects'): {
-    select(columns: string): {
-      eq(column: 'visibility', value: 'public'): PromiseLike<{ data: unknown[] | null; error: unknown }>;
-    };
-  };
+  rpc(fn: 'discover_projects_page', args: Record<string, unknown>): PromiseLike<{ data: unknown; error: unknown }>;
+}
+
+interface DiscoveryPageResult {
+  total: number;
+  rows: DiscoveryProjectRow[];
+}
+
+function isPageResult(data: unknown): data is DiscoveryPageResult {
+  const page = data as DiscoveryPageResult | null;
+  return typeof page?.total === 'number' && Array.isArray(page.rows);
 }
 
 export class DiscoveryUnavailableError extends Error {}
 
 export async function listDiscoveryProjects(db: PublicDb, filters: DiscoveryFilters): Promise<Page<ProjectSummary>> {
-  const { data, error } = await db.from('projects').select(DISCOVERY_SELECT).eq('visibility', 'public');
-  if (error || !Array.isArray(data)) throw new DiscoveryUnavailableError('Discovery query failed');
-  return applyDiscovery(data as DiscoveryProjectRow[], filters);
+  const { data, error } = await db.rpc('discover_projects_page', {
+    filter_q: filters.q ?? null,
+    filter_location: filters.location ?? null,
+    filter_sector: filters.sector ?? null,
+    filter_stage: filters.stage ?? null,
+    filter_skills: filters.skill ? skillSpellings(filters.skill) : null,
+    page_limit: filters.limit,
+    page_offset: filters.offset,
+  });
+  if (error || !isPageResult(data)) throw new DiscoveryUnavailableError('Discovery query failed');
+  return {
+    data: data.rows.map(summariseRow),
+    pagination: { limit: filters.limit, offset: filters.offset, total: data.total },
+  };
 }
