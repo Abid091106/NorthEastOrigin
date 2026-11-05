@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { parseDiscoveryFilters } from './filters.ts';
 import { handleDiscoverProjects } from './handler.ts';
-import { applyDiscovery, summariseRow, type PublicDb } from './service.ts';
+import { applyDiscovery, skillSpellings, summariseRow, type PublicDb } from './service.ts';
 import type { DiscoveryProjectRow } from './types.ts';
 
 const row = (over: Partial<DiscoveryProjectRow>): DiscoveryProjectRow => ({
@@ -115,27 +115,29 @@ test('pagination keeps the total', () => {
   assert.deepEqual(page.pagination, { limit: 1, offset: 1, total: 3 });
 });
 
-const fakeDb = (result: { data: unknown[] | null; error: unknown }): PublicDb & { calls: string[] } => {
-  const calls: string[] = [];
+const fakeDb = (result: { data: unknown; error: unknown }): PublicDb & { calls: Record<string, unknown>[] } => {
+  const calls: Record<string, unknown>[] = [];
   return {
     calls,
-    from: (t) => ({
-      select: (c) => ({
-        eq: (col, v) => {
-          calls.push(`${t}|${col}=${v}|${c.includes('project_needs') ? 'needs' : ''}`);
-          return Promise.resolve(result);
-        },
-      }),
-    }),
+    rpc: (_fn, args) => {
+      calls.push(args);
+      return Promise.resolve(result);
+    },
   };
 };
 
 test('handler: 200 page, 400 validation, 503 without leaking details', async () => {
-  const db = fakeDb({ data: rows, error: null });
-  const good = await handleDiscoverProjects({ skill: 'react' }, db);
+  const db = fakeDb({ data: { total: 25, rows: rows.slice(0, 2) }, error: null });
+  const good = await handleDiscoverProjects({ skill: 'reactjs', location: 'Newcastle', limit: '2', offset: '4' }, db);
   assert.equal(good.status, 200);
-  assert.equal((good.body as { data: unknown[] }).data.length, 2);
-  assert.deepEqual(db.calls, ['projects|visibility=public|needs']);
+  const page = good.body as { data: unknown[]; pagination: unknown };
+  assert.equal(page.data.length, 2);
+  assert.deepEqual(page.pagination, { limit: 2, offset: 4, total: 25 });
+  const args = db.calls[0];
+  assert.equal(args.filter_location, 'Newcastle');
+  assert.equal(args.page_limit, 2);
+  assert.equal(args.page_offset, 4);
+  assert.ok((args.filter_skills as string[]).includes('react'));
 
   const bad = await handleDiscoverProjects({ limit: 'abc' }, db);
   assert.equal(bad.status, 400);
@@ -144,4 +146,15 @@ test('handler: 200 page, 400 validation, 503 without leaking details', async () 
   const down = await handleDiscoverProjects({}, fakeDb({ data: null, error: { message: 'relation "x" secret detail' } }));
   assert.equal(down.status, 503);
   assert.doesNotMatch(JSON.stringify(down.body), /secret detail/);
+
+  const malformed = await handleDiscoverProjects({}, fakeDb({ data: null, error: null }));
+  assert.equal(malformed.status, 503);
+});
+
+test('skillSpellings covers every stored spelling of a skill', () => {
+  for (const input of ['React', 'react.js', ' ReactJS ']) {
+    const spellings = skillSpellings(input);
+    for (const spelling of ['react', 'reactjs', 'react.js', 'react js']) assert.ok(spellings.includes(spelling), spelling);
+  }
+  assert.deepEqual(skillSpellings('Basket Weaving'), ['basket weaving']);
 });
