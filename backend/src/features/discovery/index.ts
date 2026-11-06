@@ -35,5 +35,7 @@ export const router = Router();
 router.get('/discover/projects', async (req, res) => {
   const db = createDb(req.app.locals.env as Env) as unknown as PublicDb;
   const result = await handleDiscoverProjects(req.query as Record<string, unknown>, db);
-  res.set('Cache-Control', 'no-store').status(result.status).json(result.body);
+  // Public and caller-independent, so a CDN may reuse successful pages briefly. Errors are never cached.
+  res.set('Cache-Control', result.status === 200 ? 'public, s-maxage=30, stale-while-revalidate=60' : 'no-store');
+  res.status(result.status).json(result.body);
 });
