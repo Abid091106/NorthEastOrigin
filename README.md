@@ -4,7 +4,9 @@ Discover what the North East is building. Find a project worth joining, or the p
 
 North East Origins is a project-first collaboration platform for North East England. This repository contains the React frontend, Express API, Supabase migrations, shared contracts, fictional development fixtures and the coordination pack for five people building with coding agents.
 
-The P0 application is implemented, and the hosted preview is [north-east-origins.onrender.com](https://north-east-origins.onrender.com/), using Supabase persistence. Implementation on `main` includes the Network Design Kit redesign, bridge logo, P4 opportunities and fixed-sector discovery/project forms. The full hosted acceptance journey and rehearsal still need recorded evidence. [P1 issue #1](https://github.com/Kolyte/claudeproject/issues/1) contains the last recorded deployment commit and Auth/database checks; it does not establish that every later main commit is deployed. GitHub enforcement still requires repository administrator verification.
+**Live demo:** [northeastorigin.vercel.app](https://northeastorigin.vercel.app). This fork deploys the app to Vercel from its `vercel-deploy` branch, with public discovery cached on Vercel's CDN. It uses the team's Supabase database, so its data matches the team's original Render deployment at [north-east-origins.onrender.com](https://north-east-origins.onrender.com/).
+
+The P0 application is implemented, using Supabase persistence. Implementation on `main` includes the Network Design Kit redesign, bridge logo, P4 opportunities and fixed-sector discovery/project forms. The full hosted acceptance journey and rehearsal still need recorded evidence. [P1 issue #1](https://github.com/Kolyte/claudeproject/issues/1) contains the last recorded deployment commit and Auth/database checks; it does not establish that every later main commit is deployed. GitHub enforcement still requires repository administrator verification.
 
 Documentation reviewed on 4 November 2026 against the integrated source and GitHub records. Live task status belongs in issues; the roadmap's timed checkpoints are the original delivery plan, not a claim that work remains unstarted.
 
@@ -30,6 +32,7 @@ Documentation reviewed on 4 November 2026 against the integrated source and GitH
 - Supabase PostgreSQL and Auth; user-scoped access and Row Level Security.
 - Shared wire and generated database types in `shared/`.
 - One Render Node service serving `/api` and the compiled frontend.
+- On this fork, Vercel serves the compiled frontend from its CDN and runs `/api` as one serverless function (`vercel.json` and `api/index.mjs` on the `vercel-deploy` branch).
 
 P1 owns dependency manifests and lockfiles. Frontend and backend retain separate npm packages; both consume the type-only `@neo/contracts` local dependency.
 
