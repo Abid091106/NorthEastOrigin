@@ -1,0 +1,45 @@
+name: keep-awake
+
+# Supabase's free plan pauses a project after about a week without activity, and a
+# paused project takes both live sites down. Public discovery reads the database, so
+# one request a day counts as activity. It also wakes the Render service.
+# The job sends no secrets and changes nothing; it only reads public pages.
+
+on:
+  schedule:
+    - cron: '17 7 * * *' # every day at 07:17 UTC
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: keep-awake
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    name: keep-awake / ping
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Request public discovery on each live site
+        shell: bash
+        run: |
+          set -u
+          reached=0
+          for url in \
+            'https://north-east-origins.onrender.com/api/discover/projects?limit=1' \
+            'https://northeastorigin.vercel.app/api/discover/projects?limit=1'; do
+            # Render answers 503 while it wakes, so retry for a few minutes.
+            if curl --fail --silent --show-error --output /dev/null \
+                --retry 10 --retry-delay 20 --retry-all-errors --max-time 60 "$url"; then
+              echo "OK: $url"
+              reached=1
+            else
+              echo "::warning::No successful response from $url"
+            fi
+          done
+          if [ "$reached" -ne 1 ]; then
+            echo '::error::Neither site could read the database. Check whether the Supabase project is paused.'
+            exit 1
+          fi
