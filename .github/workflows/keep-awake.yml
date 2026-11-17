@@ -20,7 +20,9 @@ jobs:
   ping:
     name: keep-awake / ping
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Worst case is about 29 minutes of retries, so a paused database ends in a
+    # failure email rather than a silent cancellation.
+    timeout-minutes: 35
     steps:
       - name: Request public discovery on each live site
         shell: bash
